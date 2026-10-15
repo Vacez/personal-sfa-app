@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment and sensitive credentials
+.env
+.env.backup
+.env.production
+auth.json
+Homestead.json
+Homestead.yaml
+
+# Expo & Mobile
+.expo/
+dist/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.metro-health-check*
+*.tsbuildinfo
+
+# Laravel / PHP
+storage/*.key
+.phpunit.cache/
+public/storage
+public/hot
+public/build
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# IDE / OS
+.idea/
+.vscode/
+.fleet/
+.DS_Store
+Thumbs.db
