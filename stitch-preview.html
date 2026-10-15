@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal SFA - Google Stitch Design Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Noto Sans JP"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+              900: '#082f49',
+            },
+            vip: {
+              primary: '#ec4899',
+              light: '#fdf2f8',
+              border: '#fbcfe8',
+              text: '#be185d',
+            },
+            b2b: {
+              primary: '#6366f1',
+              light: '#eef2ff',
+              border: '#c7d2fe',
+              text: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #1e293b;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans JP', sans-serif;
+    }
+    .phone-frame {
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 12px #1e293b, 0 0 0 14px #334155;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen py-8 px-4 flex flex-col items-center">
+
+  <!-- Header Controls for Stitch Prototype -->
+  <header class="w-full max-w-5xl mb-6 flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-900/90 backdrop-blur border border-slate-800 p-4 rounded-2xl text-white">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-sky-600 flex items-center justify-center font-black text-lg shadow-lg shadow-sky-600/30">
+        SFA
+      </div>
+      <div>
+        <h1 class="text-base font-bold text-white flex items-center gap-2">
+          Personal SFA — Google Stitch Design System
+          <span class="text-[10px] bg-sky-500/20 text-sky-300 border border-sky-500/30 px-2 py-0.5 rounded-full font-bold">Stitch Ready</span>
+        </h1>
+        <p class="text-xs text-slate-400">Desain lengkap antarmuka bilingual (ID & JA) untuk diimpor ke Google Stitch / Figma</p>
+      </div>
+    </div>
+
+    <!-- Screen Navigator & Language Switcher -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Screen Tab Switcher -->
+      <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs">
+        <button onclick="setScreen('home')" id="tab-home" class="px-3 py-1.5 rounded-lg font-bold bg-sky-600 text-white transition">Home</button>
+        <button onclick="setScreen('deals')" id="tab-deals" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition">Deals</button>
+        <button onclick="setScreen('contacts')" id="tab-contacts" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition">Contacts</button>
+        <button onclick="setScreen('growth')" id="tab-growth" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition">Growth</button>
+        <button onclick="setScreen('settings')" id="tab-settings" class="px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition">Settings</button>
+      </div>
+
+      <!-- Live Language Switcher for Preview -->
+      <div class="flex bg-slate-800 p-1 rounded-xl border border-slate-700 text-xs">
+        <button onclick="toggleLang('id')" id="lang-id" class="px-2.5 py-1.5 rounded-lg font-bold bg-white text-slate-900 transition">🇮🇩 ID</button>
+        <button onclick="toggleLang('ja')" id="lang-ja" class="px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition">🇯🇵 日本語</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Mobile Device Mockup (375px width) -->
+  <main class="w-full max-w-[390px] h-[812px] bg-white rounded-[44px] phone-frame overflow-hidden relative flex flex-col border border-slate-700">
+
+    <!-- iOS Status Bar Simulation -->
+    <div class="h-10 bg-white px-7 flex items-center justify-between text-xs font-semibold text-slate-900 z-20 shrink-0">
+      <span>9:41</span>
+      <div class="w-24 h-4 bg-slate-900 rounded-full mx-auto -mt-2"></div>
+      <div class="flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.64 10.56 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M2 17h20v2H2zm1.15-4.05L4 11.97l6.83-6.84a3.02 3.02 0 0 1 4.34 0l6.83 6.84-.85.98-6.83-6.84a1.86 1.86 0 0 0-2.64 0l-6.83 6.84z"/></svg>
+        <div class="w-5 h-2.5 border border-slate-900 rounded-sm p-0.5 flex items-center"><div class="w-full h-full bg-slate-900 rounded-[1px]"></div></div>
+      </div>
+    </div>
+
+    <!-- App Top Header -->
+    <div class="px-4 py-2.5 bg-white border-b border-slate-100 flex items-center justify-between shrink-0 z-10">
+      <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-pink-50 border border-pink-200">
+        <span class="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse"></span>
+        <span class="text-[11px] font-bold text-pink-700" id="header-mode">VIP Hospitality</span>
+        <span class="text-xs text-slate-400 font-bold ml-0.5">⇄</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex bg-slate-100 p-0.5 rounded-full border border-slate-200 text-[10px]">
+          <button onclick="toggleLang('id')" class="px-2 py-0.5 rounded-full font-bold bg-white shadow-sm text-sky-800" id="pill-id">ID</button>
+          <button onclick="toggleLang('ja')" class="px-2 py-0.5 rounded-full font-bold text-slate-500" id="pill-ja">JP</button>
+        </div>
+        <div class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+          K
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Screen Content Container -->
+    <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-50 relative pb-24">
+
+      <!-- SCREEN 1: HOME SCREEN -->
+      <section id="screen-home" class="block">
+        <!-- Title Section -->
+        <div class="px-4 pt-3 pb-2 bg-white border-b border-slate-100">
+          <h2 class="text-lg font-black text-slate-900 tracking-tight" id="home-title">Prioritas Hari Ini</h2>
+          <p class="text-[11px] text-slate-500" id="home-subtitle">Milestone Tamu VIP & Target Penjualan Berbobot</p>
+        </div>
+
+        <!-- Weighted Forecast Hero Card -->
+        <div class="m-4 p-4 rounded-2xl bg-slate-900 text-white shadow-xl shadow-slate-900/20 border border-slate-800">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400" id="forecast-label">Proyeksi Pendapatan Berbobot</span>
+              <div class="text-2xl font-black tracking-tight text-white mt-1">¥2,213,500</div>
+            </div>
+            <div class="px-2 py-1 rounded bg-sky-500/20 border border-sky-400/30 text-sky-300 text-[11px] font-bold">
+              221.4% Pacing
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="mt-4">
+            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden relative">
+              <div class="absolute left-0 top-0 h-full bg-sky-500/40 rounded-full" style="width: 100%;"></div>
+              <div class="absolute left-0 top-0 h-full bg-sky-500 rounded-full shadow-sm" style="width: 81%;"></div>
+            </div>
+            <div class="flex justify-between items-center text-[10px] text-slate-400 mt-1.5 font-medium">
+              <span id="forecast-target">Target Kuota: ¥1,000,000</span>
+              <span class="text-sky-400 font-bold" id="forecast-proj">Proyeksi: 221%</span>
+            </div>
+          </div>
+
+          <!-- Dual Metrics Split -->
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-500"></span>
+              <div>
+                <div class="text-[9px] uppercase text-slate-400 font-semibold" id="forecast-conf">Terkonfirmasi</div>
+                <div class="text-xs font-bold text-white">¥815,000</div>
+              </div>
+            </div>
+            <div class="w-px h-6 bg-slate-800"></div>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+              <div>
+                <div class="text-[9px] uppercase text-slate-400 font-semibold" id="forecast-pipe">Pipeline Berbobot</div>
+                <div class="text-xs font-bold text-white">¥1,398,500</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Alerts Header -->
+        <div class="px-4 flex items-center justify-between mb-2">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-slate-600" id="alerts-header">Peringatan Tindakan (4)</span>
+          <span class="text-[11px] font-bold text-sky-600" id="alerts-sync">Sinkronisasi Langsung</span>
+        </div>
+
+        <!-- Alert Card 1: Birthday -->
+        <div class="mx-4 mb-3 p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200" id="badge-bday">
+              🎂 ULANG TAHUN HARI INI
+            </span>
+            <span class="text-[11px] font-bold text-slate-500">LTV ¥1,850,000</span>
+          </div>
+          <h4 class="font-extrabold text-sm text-slate-900">Ayumi Sakamoto <span class="text-xs font-normal text-slate-500">(Ayu-san)</span></h4>
+          <p class="text-xs text-slate-600 mt-1" id="bday-desc">🍾 Saran Rekomendasi: Dom Pérignon Vintage 2012</p>
+          <button class="mt-3 w-full py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg transition shadow-sm" id="btn-bday">
+            ✨ Kirim Ucapan Ulang Tahun
+          </button>
+        </div>
+
+        <!-- Alert Card 2: Inactive Client -->
+        <div class="mx-4 mb-3 p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200" id="badge-inactive">
+              ⚠️ TIDAK AKTIF > 14 HARI
+            </span>
+            <span class="text-[11px] font-bold text-slate-500">LTV ¥2,400,000</span>
+          </div>
+          <h4 class="font-extrabold text-sm text-slate-900">Kenzo Murata <span class="text-xs font-normal text-slate-500">(Murata Group)</span></h4>
+          <p class="text-xs text-slate-600 mt-1" id="inactive-desc">Terakhir dihubungi 18 hari lalu. Pelanggan bernilai transaksi tinggi.</p>
+          <button class="mt-3 w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg transition shadow-sm" id="btn-inactive">
+            💬 Hubungi Cepat
+          </button>
+        </div>
+      </section>
+
+      <!-- SCREEN 2: DEALS & RETENTION PIPELINE -->
+      <section id="screen-deals" class="hidden">
+        <div class="px-4 pt-3 pb-2 bg-white border-b border-slate-100">
+          <h2 class="text-lg font-black text-slate-900 tracking-tight" id="deals-title">Peluang & Pipeline</h2>
+          <p class="text-[11px] text-slate-500" id="deals-subtitle">Tahapan Retensi & Konversi Kunjungan Tamu</p>
+        </div>
+
+        <!-- Summary Bar -->
+        <div class="bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between">
+          <div>
+            <div class="text-[9px] uppercase font-bold text-slate-400" id="deals-sum-pipe">Total Pipeline</div>
+            <div class="text-sm font-black text-slate-900">¥710,000</div>
+          </div>
+          <div class="w-px h-6 bg-slate-200"></div>
+          <div>
+            <div class="text-[9px] uppercase font-bold text-slate-400" id="deals-sum-weight">Proyeksi Berbobot</div>
+            <div class="text-sm font-black text-sky-600">¥412,500</div>
+          </div>
+        </div>
+
+        <!-- Horizontal Stages -->
+        <div class="bg-white p-2 border-b border-slate-200 flex gap-2 overflow-x-auto custom-scrollbar">
+          <div class="shrink-0 p-2 rounded-lg bg-sky-50 border border-sky-400 text-left min-w-[130px]">
+            <div class="flex items-center justify-between text-xs font-bold text-sky-900">
+              <span id="stage-hook">Second Visit</span>
+              <span class="text-[9px] px-1 py-0.5 rounded bg-sky-200 text-sky-800">45%</span>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1 font-medium">2 deals • ¥210,000</div>
+          </div>
+          <div class="shrink-0 p-2 rounded-lg bg-slate-100 border border-slate-200 text-left min-w-[130px]">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+              <span id="stage-reg">Regular Patron</span>
+              <span class="text-[9px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-800">75%</span>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1 font-medium">4 deals • ¥350,000</div>
+          </div>
+          <div class="shrink-0 p-2 rounded-lg bg-slate-100 border border-slate-200 text-left min-w-[130px]">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+              <span id="stage-champ">VIP Champion</span>
+              <span class="text-[9px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-800">90%</span>
+            </div>
+            <div class="text-[10px] text-slate-500 mt-1 font-medium">1 deal • ¥150,000</div>
+          </div>
+        </div>
+
+        <!-- Deals Card List -->
+        <div class="p-4 space-y-3">
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <h4 class="font-extrabold text-sm text-slate-900">Hiroshi Sato</h4>
+                <p class="text-xs text-slate-500">Booth Sofa A • Table Reserve</p>
+              </div>
+              <div class="text-right">
+                <div class="font-black text-sm text-slate-900">¥120,000</div>
+                <div class="text-[10px] font-bold text-sky-600">W: ¥54,000</div>
+              </div>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-[11px] text-slate-400">Kontak: 2 hari lalu</span>
+              <button class="px-2.5 py-1 bg-slate-900 text-white rounded text-[11px] font-bold">Lanjutkan ➔</button>
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div>
+                <h4 class="font-extrabold text-sm text-slate-900">Makoto Shimizu</h4>
+                <p class="text-xs text-slate-500">Yamazaki 18 VIP Lounge</p>
+              </div>
+              <div class="text-right">
+                <div class="font-black text-sm text-slate-900">¥90,000</div>
+                <div class="text-[10px] font-bold text-sky-600">W: ¥40,500</div>
+              </div>
+            </div>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-[11px] text-slate-400">Kontak: Hari ini</span>
+              <button class="px-2.5 py-1 bg-slate-900 text-white rounded text-[11px] font-bold">Lanjutkan ➔</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 3: CONTACTS & LTV -->
+      <section id="screen-contacts" class="hidden">
+        <div class="px-4 pt-3 pb-2 bg-white border-b border-slate-100">
+          <h2 class="text-lg font-black text-slate-900 tracking-tight" id="contacts-title">Direktori Klien & LTV</h2>
+          <p class="text-[11px] text-slate-500" id="contacts-subtitle">Daftar Tamu VIP Berdasarkan Total Belanja</p>
+        </div>
+
+        <div class="bg-white p-3 border-b border-slate-200">
+          <div class="bg-slate-100 px-3 py-2 rounded-lg flex items-center gap-2 text-xs text-slate-500">
+            <span>🔍</span>
+            <input type="text" placeholder="Cari nama, panggilan, atau nomor..." class="bg-transparent w-full focus:outline-none text-slate-900 font-medium" id="search-input">
+          </div>
+          <div class="flex items-center gap-2 mt-2.5 text-[11px]">
+            <span class="text-slate-400 font-bold" id="rank-by">Urutkan:</span>
+            <span class="px-2.5 py-1 rounded-full bg-sky-600 text-white font-bold" id="sort-ltv">Total Belanja (LTV)</span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium">Terbaru</span>
+            <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium">Nama</span>
+          </div>
+        </div>
+
+        <div class="p-4 space-y-2.5">
+          <!-- Contact 1 -->
+          <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-extrabold text-xs flex items-center justify-center">#1</div>
+              <div>
+                <div class="text-sm font-extrabold text-slate-900 flex items-center gap-1">
+                  Kenzo Murata <span>🎂</span>
+                </div>
+                <div class="text-[11px] text-slate-500">Murata Group • VIP Patron</div>
+                <div class="inline-block mt-1 text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-semibold">🍾 Dom Pérignon</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-extrabold text-emerald-700">¥2,400,000</div>
+              <div class="text-[9px] text-slate-400">Total Belanja</div>
+              <div class="text-[10px] text-sky-600 font-bold mt-0.5">VIP Champion</div>
+            </div>
+          </div>
+
+          <!-- Contact 2 -->
+          <div class="bg-white p-3 rounded-xl border border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-extrabold text-xs flex items-center justify-center">#2</div>
+              <div>
+                <div class="text-sm font-extrabold text-slate-900">Ayumi Sakamoto</div>
+                <div class="text-[11px] text-slate-500">Ayu-san • +81 90-8888-1234</div>
+                <div class="inline-block mt-1 text-[10px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded font-semibold">🍾 Champagne Rosé</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-sm font-extrabold text-emerald-700">¥1,850,000</div>
+              <div class="text-[9px] text-slate-400">Total Belanja</div>
+              <div class="text-[10px] text-sky-600 font-bold mt-0.5">Regular Patron</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SCREEN 4: GROWTH & SOCIAL ATTRIBUTION -->
+      <section id="screen-growth" class="hidden">
+        <div class="px-4 pt-3 pb-2 bg-white border-b border-slate-100">
+          <h2 class="text-lg font-black text-slate-900 tracking-tight" id="growth-title">Pertumbuhan & Atribusi</h2>
+          <p class="text-[11px] text-slate-500" id="growth-subtitle">Pelacakan Otomatis Media Sosial & Konversi Penjualan</p>
+        </div>
+
+        <div class="m-4 p-4 rounded-2xl bg-slate-900 text-white border border-slate-800">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-slate-400" id="attr-label">Penjualan Teratribusi Kampanye</span>
+              <div class="text-2xl font-black mt-1">¥1,420,000</div>
+            </div>
+            <button class="px-3 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs" id="btn-sync-posts">⚡ Sync</button>
+          </div>
+          <p class="text-[10px] text-slate-400 mt-2.5 leading-relaxed" id="attr-desc">
+            Otomatis dikorelasikan dari postingan Instagram dan X dalam 48 jam sebelum reservasi dibuat.
+          </p>
+        </div>
+
+        <div class="px-4 mb-2">
+          <h3 class="text-xs font-black text-slate-800 uppercase tracking-wider" id="cvr-title">Peringkat Konversi (CVR) Pesan</h3>
+        </div>
+
+        <div class="mx-4 mb-3 p-3.5 bg-white rounded-xl border border-slate-200">
+          <div class="flex items-center gap-2.5 mb-2">
+            <span class="px-2 py-1 rounded bg-sky-50 text-sky-700 border border-sky-200 font-black text-xs">48.5% CVR</span>
+            <div>
+              <h4 class="font-extrabold text-xs text-slate-900">#1 Undangan Vintage Champagne</h4>
+              <p class="text-[10px] text-slate-500">Digunakan 18 kali • Menghasilkan 9 transaksi</p>
+            </div>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-lg text-xs italic text-slate-600 mb-2">
+            "Malam ini kami membuka reserve khusus vintage champagne untuk menyambut kedatangan Anda..."
+          </div>
+          <button class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-bold text-xs" id="btn-copy-pitch">
+            📋 Salin Teks Pesan
+          </button>
+        </div>
+      </section>
+
+      <!-- SCREEN 5: SETTINGS & LANGUAGE -->
+      <section id="screen-settings" class="hidden">
+        <div class="px-4 pt-3 pb-2 bg-white border-b border-slate-100">
+          <h2 class="text-lg font-black text-slate-900 tracking-tight" id="settings-title">Pengaturan & Sistem</h2>
+          <p class="text-[11px] text-slate-500" id="settings-subtitle">Mode Persona, Integrasi Akuntansi & Pengaturan Bahasa</p>
+        </div>
+
+        <!-- Language Selector Section (Patent Rule) -->
+        <div class="p-4">
+          <h3 class="text-[11px] font-extrabold uppercase text-slate-500 tracking-wider mb-2" id="lang-section-title">Pilihan Bahasa Aplikasi</h3>
+          <div class="bg-white p-3 rounded-2xl border border-slate-200 space-y-2">
+            <div onclick="toggleLang('id')" class="p-2.5 rounded-xl flex items-start gap-2.5 cursor-pointer bg-sky-50 border border-sky-300">
+              <span class="w-4 h-4 rounded-full border-2 border-sky-600 flex items-center justify-center mt-0.5">
+                <span class="w-2 h-2 rounded-full bg-sky-600" id="radio-id"></span>
+              </span>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900">🇮🇩 Bahasa Indonesia</h4>
+                <p class="text-[11px] text-slate-600 mt-0.5">Gunakan Bahasa Indonesia pada seluruh menu, analitik, dan pipeline.</p>
+              </div>
+            </div>
+
+            <div onclick="toggleLang('ja')" class="p-2.5 rounded-xl flex items-start gap-2.5 cursor-pointer bg-white border border-slate-100 hover:bg-slate-50">
+              <span class="w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center mt-0.5">
+                <span class="w-2 h-2 rounded-full bg-transparent" id="radio-ja"></span>
+              </span>
+              <div>
+                <h4 class="text-xs font-extrabold text-slate-900">🇯🇵 日本語 (Jepang)</h4>
+                <p class="text-[11px] text-slate-600 mt-0.5">すべての画面・数値・メニューを日本語で表示します。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Operating Persona Section -->
+        <div class="px-4 pb-4">
+          <h3 class="text-[11px] font-extrabold uppercase text-slate-500 tracking-wider mb-2" id="persona-title">Mode Persona Operasional</h3>
+          <div class="bg-white p-3 rounded-2xl border border-slate-200 space-y-2">
+            <div class="p-2.5 rounded-xl bg-pink-50 border border-pink-200">
+              <h4 class="text-xs font-extrabold text-slate-900">🍾 Mode Hospitality VIP</h4>
+              <p class="text-[10px] text-slate-600 mt-0.5">Hubungan tamu eksklusif, corong kunjungan berulang, preferensi meja, pengingat hari penting, saldo bon (ツケ).</p>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+              <h4 class="text-xs font-extrabold text-slate-900">💼 Mode Konsultasi B2B</h4>
+              <p class="text-[10px] text-slate-600 mt-0.5">Pipeline milestone proyek, invoice korporat, tahap penemuan, dan perkiraan kontrak berbobot.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Floating Action Button (FAB) -->
+    <div class="absolute bottom-16 left-4 right-4 z-20">
+      <button onclick="openModal()" class="w-full py-3 bg-slate-900 hover:bg-black text-white text-xs font-extrabold rounded-full shadow-lg shadow-slate-900/40 flex items-center justify-center gap-2 transition" id="fab-text">
+        🍾 Catat Tagihan & Sinkron
+      </button>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="h-14 bg-white border-t border-slate-200 px-2 flex items-center justify-around shrink-0 z-30">
+      <button onclick="setScreen('home')" id="nav-home" class="flex flex-col items-center text-sky-600">
+        <span class="text-base">🏠</span>
+        <span class="text-[9px] font-bold mt-0.5" id="nav-lbl-home">Beranda</span>
+      </button>
+      <button onclick="setScreen('deals')" id="nav-deals" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <span class="text-base">💼</span>
+        <span class="text-[9px] font-bold mt-0.5" id="nav-lbl-deals">Peluang</span>
+      </button>
+      <button onclick="setScreen('contacts')" id="nav-contacts" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <span class="text-base">👥</span>
+        <span class="text-[9px] font-bold mt-0.5" id="nav-lbl-contacts">Kontak</span>
+      </button>
+      <button onclick="setScreen('growth')" id="nav-growth" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <span class="text-base">📈</span>
+        <span class="text-[9px] font-bold mt-0.5" id="nav-lbl-growth">Pertumbuhan</span>
+      </button>
+      <button onclick="setScreen('settings')" id="nav-settings" class="flex flex-col items-center text-slate-400 hover:text-slate-700">
+        <span class="text-base">⚙️</span>
+        <span class="text-[9px] font-bold mt-0.5" id="nav-lbl-settings">Pengaturan</span>
+      </button>
+    </nav>
+
+    <!-- Slide-Up Modal: Record Sales (Hidden by default) -->
+    <div id="modal-record" class="hidden absolute inset-0 bg-slate-950/70 backdrop-blur-sm z-40 flex flex-col justify-end">
+      <div class="bg-white rounded-t-3xl p-4 max-h-[85%] overflow-y-auto border-t border-slate-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900" id="modal-title">Catat Penjualan & Tagihan</h3>
+            <p class="text-[10px] text-slate-500" id="modal-subtitle">Akuntansi Langsung & Sinkronisasi Sosial</p>
+          </div>
+          <button onclick="closeModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs">✕</button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-[10px] font-extrabold uppercase text-slate-600" id="modal-lbl-client">Pilih Klien / Tamu</label>
+            <div class="flex gap-1.5 overflow-x-auto py-1 mt-1">
+              <span class="px-2.5 py-1 rounded-full bg-sky-600 text-white text-xs font-bold shrink-0">Kenzo Murata</span>
+              <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium shrink-0">Ayumi S.</span>
+              <span class="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium shrink-0">Hiroshi Sato</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-extrabold uppercase text-slate-600" id="modal-lbl-amount">Jumlah Penjualan (JPY)</label>
+            <div class="flex items-center border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 mt-1">
+              <span class="font-extrabold text-slate-500 mr-2">¥</span>
+              <input type="text" value="75,000" class="w-full bg-transparent font-black text-base text-slate-900 focus:outline-none">
+            </div>
+            <div class="flex gap-1.5 mt-1.5">
+              <span class="flex-1 py-1 rounded bg-slate-100 text-center text-[10px] font-bold text-slate-700">+¥50k</span>
+              <span class="flex-1 py-1 rounded bg-slate-100 text-center text-[10px] font-bold text-slate-700">+¥100k</span>
+              <span class="flex-1 py-1 rounded bg-slate-100 text-center text-[10px] font-bold text-slate-700">+¥250k</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-[10px] font-extrabold uppercase text-slate-600" id="modal-lbl-method">Metode Pembayaran</label>
+            <div class="grid grid-cols-3 gap-1.5 mt-1">
+              <button class="py-2 rounded-lg bg-sky-50 border border-sky-400 text-sky-800 text-[10px] font-bold">💳 Kartu</button>
+              <button class="py-2 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold">💵 Tunai</button>
+              <button class="py-2 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold">📝 Bon (ツケ)</button>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-lg bg-sky-50 border border-sky-200 text-[10px] text-sky-800">
+            <span class="font-bold">⚡ Atribusi Pemasaran Otomatis:</span> Dikorelasikan dengan postingan Instagram dalam 48 jam.
+          </div>
+
+          <button onclick="closeModal()" class="w-full py-2.5 bg-sky-600 text-white font-extrabold text-xs rounded-xl shadow-md shadow-sky-600/30" id="modal-btn-confirm">
+            Konfirmasi & Simpan Transaksi
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="mt-6 text-center text-xs text-slate-500">
+    Google Stitch Design System & Prompts Package • Personal SFA Full-Stack Application
+  </footer>
+
+  <!-- Live Switcher & I18N Script -->
+  <script>
+    let currentLang = 'id';
+
+    const translations = {
+      id: {
+        headerMode: 'VIP Hospitality',
+        homeTitle: 'Prioritas Hari Ini',
+        homeSubtitle: 'Milestone Tamu VIP & Target Penjualan Berbobot',
+        forecastLabel: 'PROYEKSI PENDAPATAN BERBOBOT',
+        forecastTarget: 'Target Kuota: ¥1,000,000',
+        forecastProj: 'Proyeksi: 221%',
+        forecastConf: 'Terkonfirmasi',
+        forecastPipe: 'Pipeline Berbobot',
+        alertsHeader: 'PERINGATAN TINDAKAN (4)',
+        alertsSync: 'Sinkronisasi Langsung',
+        badgeBday: '🎂 ULANG TAHUN HARI INI',
+        bdayDesc: '🍾 Saran Rekomendasi: Dom Pérignon Vintage 2012',
+        btnBday: '✨ Kirim Ucapan Ulang Tahun',
+        badgeInactive: '⚠️ TIDAK AKTIF > 14 HARI',
+        inactiveDesc: 'Terakhir dihubungi 18 hari lalu. Pelanggan bernilai transaksi tinggi.',
+        btnInactive: '💬 Hubungi Cepat',
+        fabText: '🍾 Catat Tagihan & Sinkron',
+        navHome: 'Beranda',
+        navDeals: 'Peluang',
+        navContacts: 'Kontak',
+        navGrowth: 'Pertumbuhan',
+        navSettings: 'Pengaturan',
+        dealsTitle: 'Peluang & Pipeline',
+        dealsSubtitle: 'Tahapan Retensi & Konversi Kunjungan Tamu',
+        dealsSumPipe: 'Total Pipeline',
+        dealsSumWeight: 'Proyeksi Berbobot',
+        stageHook: 'Kunjungan Ke-2',
+        stageReg: 'Pelanggan Tetap',
+        stageChamp: 'VIP Utama',
+        contactsTitle: 'Direktori Klien & LTV',
+        contactsSubtitle: 'Daftar Tamu VIP Berdasarkan Total Belanja',
+        growthTitle: 'Pertumbuhan & Atribusi',
+        growthSubtitle: 'Pelacakan Otomatis Media Sosial & Konversi Penjualan',
+        settingsTitle: 'Pengaturan & Sistem',
+        settingsSubtitle: 'Mode Persona, Integrasi Akuntansi & Pengaturan Bahasa',
+        modalTitle: 'Catat Penjualan & Tagihan',
+        modalSubtitle: 'Akuntansi Langsung & Sinkronisasi Sosial',
+        modalBtnConfirm: 'Konfirmasi & Simpan Transaksi',
+      },
+      ja: {
+        headerMode: 'VIP 接客',
+        homeTitle: '本日の優先事項',
+        homeSubtitle: 'VIP顧客マイルストーン & 加重売上ペース',
+        forecastLabel: '加重売上予測',
+        forecastTarget: '目標ノルマ: ¥1,000,000',
+        forecastProj: '着地予想: 221%',
+        forecastConf: '確定売上',
+        forecastPipe: '加重見込み',
+        alertsHeader: '要対応アラート (4)',
+        alertsSync: '同期更新',
+        badgeBday: '🎂 本日誕生日',
+        bdayDesc: '🍾 おすすめギフト: ドン・ペリニヨン ヴィンテージ 2012',
+        btnBday: '✨ 誕生日メッセージ送信',
+        badgeInactive: '⚠️ 14日以上未連絡',
+        inactiveDesc: '最終連絡 18日前。高LTVの最重要顧客です。',
+        btnInactive: '💬 クイック連絡',
+        fabText: '🍾 売上伝票を記録・同期',
+        navHome: 'ホーム',
+        navDeals: '案件',
+        navContacts: '顧客',
+        navGrowth: '成長',
+        navSettings: '設定',
+        dealsTitle: '案件 & パイプライン',
+        dealsSubtitle: '顧客リテンション & 来店転換ステージ',
+        dealsSumPipe: 'パイプライン総額',
+        dealsSumWeight: '加重見込み合計',
+        stageHook: '2回目フック',
+        stageReg: 'リピート常連',
+        stageChamp: 'VIPチャンピオン',
+        contactsTitle: '顧客ディレクトリ & LTV',
+        contactsSubtitle: '生涯売上順VIP顧客リスト',
+        growthTitle: '成長 & アトリビューション',
+        growthSubtitle: 'ゼロタッチSNS追跡 & メッセージ成約率',
+        settingsTitle: '設定 & システム',
+        settingsSubtitle: 'ペルソナモード・会計連携・言語設定',
+        modalTitle: '売上伝票・請求を記録',
+        modalSubtitle: '直接会計連携 & ゼロタッチSNS相関',
+        modalBtnConfirm: '伝票を登録して確定',
+      }
+    };
+
+    function setScreen(screenName) {
+      const screens = ['home', 'deals', 'contacts', 'growth', 'settings'];
+      screens.forEach(s => {
+        const el = document.getElementById(`screen-${s}`);
+        const tabBtn = document.getElementById(`tab-${s}`);
+        const navBtn = document.getElementById(`nav-${s}`);
+        
+        if (s === screenName) {
+          el.classList.remove('hidden');
+          tabBtn.className = "px-3 py-1.5 rounded-lg font-bold bg-sky-600 text-white transition";
+          navBtn.className = "flex flex-col items-center text-sky-600";
+        } else {
+          el.classList.add('hidden');
+          tabBtn.className = "px-3 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition";
+          navBtn.className = "flex flex-col items-center text-slate-400 hover:text-slate-700";
+        }
+      });
+    }
+
+    function toggleLang(lang) {
+      currentLang = lang;
+      const t = translations[lang];
+
+      // Update text nodes
+      document.getElementById('header-mode').innerText = t.headerMode;
+      document.getElementById('home-title').innerText = t.homeTitle;
+      document.getElementById('home-subtitle').innerText = t.homeSubtitle;
+      document.getElementById('forecast-label').innerText = t.forecastLabel;
+      document.getElementById('forecast-target').innerText = t.forecastTarget;
+      document.getElementById('forecast-proj').innerText = t.forecastProj;
+      document.getElementById('forecast-conf').innerText = t.forecastConf;
+      document.getElementById('forecast-pipe').innerText = t.forecastPipe;
+      document.getElementById('alerts-header').innerText = t.alertsHeader;
+      document.getElementById('alerts-sync').innerText = t.alertsSync;
+      document.getElementById('badge-bday').innerText = t.badgeBday;
+      document.getElementById('bday-desc').innerText = t.bdayDesc;
+      document.getElementById('btn-bday').innerText = t.btnBday;
+      document.getElementById('badge-inactive').innerText = t.badgeInactive;
+      document.getElementById('inactive-desc').innerText = t.inactiveDesc;
+      document.getElementById('btn-inactive').innerText = t.btnInactive;
+      document.getElementById('fab-text').innerText = t.fabText;
+      document.getElementById('nav-lbl-home').innerText = t.navHome;
+      document.getElementById('nav-lbl-deals').innerText = t.navDeals;
+      document.getElementById('nav-lbl-contacts').innerText = t.navContacts;
+      document.getElementById('nav-lbl-growth').innerText = t.navGrowth;
+      document.getElementById('nav-lbl-settings').innerText = t.navSettings;
+      document.getElementById('deals-title').innerText = t.dealsTitle;
+      document.getElementById('deals-subtitle').innerText = t.dealsSubtitle;
+      document.getElementById('deals-sum-pipe').innerText = t.dealsSumPipe;
+      document.getElementById('deals-sum-weight').innerText = t.dealsSumWeight;
+      document.getElementById('stage-hook').innerText = t.stageHook;
+      document.getElementById('stage-reg').innerText = t.stageReg;
+      document.getElementById('stage-champ').innerText = t.stageChamp;
+      document.getElementById('contacts-title').innerText = t.contactsTitle;
+      document.getElementById('contacts-subtitle').innerText = t.contactsSubtitle;
+      document.getElementById('growth-title').innerText = t.growthTitle;
+      document.getElementById('growth-subtitle').innerText = t.growthSubtitle;
+      document.getElementById('settings-title').innerText = t.settingsTitle;
+      document.getElementById('settings-subtitle').innerText = t.settingsSubtitle;
+      document.getElementById('modal-title').innerText = t.modalTitle;
+      document.getElementById('modal-subtitle').innerText = t.modalSubtitle;
+      document.getElementById('modal-btn-confirm').innerText = t.modalBtnConfirm;
+
+      // Update Top Switcher Buttons
+      const btnId = document.getElementById('lang-id');
+      const btnJa = document.getElementById('lang-ja');
+      const pillId = document.getElementById('pill-id');
+      const pillJa = document.getElementById('pill-ja');
+      const radioId = document.getElementById('radio-id');
+      const radioJa = document.getElementById('radio-ja');
+
+      if (lang === 'id') {
+        btnId.className = "px-2.5 py-1.5 rounded-lg font-bold bg-white text-slate-900 transition";
+        btnJa.className = "px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition";
+        pillId.className = "px-2 py-0.5 rounded-full font-bold bg-white shadow-sm text-sky-800";
+        pillJa.className = "px-2 py-0.5 rounded-full font-bold text-slate-500";
+        radioId.className = "w-2 h-2 rounded-full bg-sky-600";
+        radioJa.className = "w-2 h-2 rounded-full bg-transparent";
+      } else {
+        btnJa.className = "px-2.5 py-1.5 rounded-lg font-bold bg-white text-slate-900 transition";
+        btnId.className = "px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white transition";
+        pillJa.className = "px-2 py-0.5 rounded-full font-bold bg-white shadow-sm text-sky-800";
+        pillId.className = "px-2 py-0.5 rounded-full font-bold text-slate-500";
+        radioJa.className = "w-2 h-2 rounded-full bg-sky-600";
+        radioId.className = "w-2 h-2 rounded-full bg-transparent";
+      }
+    }
+
+    function openModal() {
+      document.getElementById('modal-record').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-record').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
