@@ -732,6 +732,11 @@
     function closeModal() {
       document.getElementById('modal-record').classList.add('hidden');
     }
+
+    // Default to Japanese as requested
+    window.addEventListener('DOMContentLoaded', () => {
+      toggleLang('ja');
+    });
   </script>
 </body>
 </html>
