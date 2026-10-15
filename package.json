@@ -1,0 +1,12 @@
+{
+  "name": "personal-sfa-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Personal SFA Application (Full-Stack Expo React Native + Laravel API)",
+  "scripts": {
+    "start": "cd frontend && npx expo start --lan",
+    "frontend": "cd frontend && npx expo start --lan",
+    "web": "cd frontend && npx expo start --web",
+    "backend": "cd backend && php artisan serve --host=0.0.0.0 --port=8000"
+  }
+}
