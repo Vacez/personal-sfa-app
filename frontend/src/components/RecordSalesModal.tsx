@@ -4,6 +4,7 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -29,10 +30,11 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
   onSuccess,
   selectedContact,
 }) => {
-  const { t } = useLanguage();
+  const { t, formatCurrency } = useLanguage();
   const [contactId, setContactId] = useState<string>(selectedContact?.id || '');
-  const [amount, setAmount] = useState<string>('');
+  const [amount, setAmount] = useState<string>('75000');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CREDIT_CARD' | 'RECEIVABLE'>('CREDIT_CARD');
+  const [isSettled, setIsSettled] = useState<boolean>(true);
   const [orderType, setOrderType] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -44,6 +46,20 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
       setContactId(contacts[0].id);
     }
   }, [selectedContact, contacts]);
+
+  const handleQuickAdd = (addVal: number) => {
+    const cur = parseFloat(amount) || 0;
+    setAmount((cur + addVal).toString());
+  };
+
+  const handlePaymentMethodChange = (method: 'CASH' | 'CREDIT_CARD' | 'RECEIVABLE') => {
+    setPaymentMethod(method);
+    if (method === 'RECEIVABLE') {
+      setIsSettled(false);
+    } else {
+      setIsSettled(true);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!contactId) {
@@ -65,8 +81,10 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
         amount: numAmount,
         payment_method: paymentMethod,
         transaction_date: new Date().toISOString().split('T')[0],
+        is_settled: isSettled,
         metadata: {
-          order_type: orderType || 'VIP Service & Bill',
+          order_type: orderType || 'VIP Service & Bottle Bill',
+          auto_attributed_post: "IG (Oct 10): 'VIP Lounge Autumn Update' (142 likes)",
         },
       });
 
@@ -80,21 +98,27 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
     }
   };
 
+  const activeContact = contacts.find((c) => c.id === contactId) || contacts[0];
+
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View style={styles.sheet}>
+          {/* Header */}
           <View style={styles.header}>
             <View>
+              <Text style={styles.eyebrow}>ACCOUNTING & CRM SYNC / {paymentMethod}</Text>
               <Text style={styles.title}>{t.modals.recordSalesTitle}</Text>
-              <Text style={styles.subtitle}>{t.modals.recordSalesSubtitle}</Text>
+              <Text style={styles.subtitle}>
+                {t.modals.recordSalesSubtitle}
+              </Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.body}>
+          <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
             {errorMsg && (
               <View style={styles.errorBanner}>
                 <Text style={styles.errorText}>{errorMsg}</Text>
@@ -104,19 +128,19 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
             {/* Client Selection */}
             <Text style={styles.label}>{t.modals.selectClient}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.clientScroll}>
-              {contacts.map((c) => {
+              {contacts.map((c, idx) => {
                 const isSelected = c.id === contactId;
                 return (
                   <TouchableOpacity
                     key={c.id}
                     onPress={() => setContactId(c.id)}
-                    style={[
-                      styles.clientChip,
-                      isSelected && styles.clientChipSelected,
-                    ]}
+                    style={[styles.clientChip, isSelected && styles.clientChipSelected]}
                   >
                     <Text style={[styles.clientChipText, isSelected && styles.clientChipTextSelected]}>
-                      {c.name}
+                      {c.name} (VIP #{idx + 1})
+                    </Text>
+                    <Text style={[styles.clientChipLtv, isSelected && styles.clientChipLtvSelected]}>
+                      LTV: {formatCurrency(c.lifetime_sales_amount || 0)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -124,7 +148,7 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
             </ScrollView>
 
             {/* Amount Input */}
-            <Text style={styles.label}>{t.modals.salesAmount}</Text>
+            <Text style={styles.label}>{t.modals.salesAmount} *</Text>
             <View style={styles.inputWrapper}>
               <Text style={styles.currencyPrefix}>¥</Text>
               <TextInput
@@ -139,34 +163,44 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
 
             {/* Quick Amount Buttons */}
             <View style={styles.quickAmountRow}>
-              {[50000, 100000, 250000, 500000].map((quickVal) => (
+              {[50000, 100000, 200000].map((quickVal) => (
                 <TouchableOpacity
                   key={quickVal}
                   style={styles.quickBtn}
-                  onPress={() => setAmount(quickVal.toString())}
+                  onPress={() => handleQuickAdd(quickVal)}
                 >
-                  <Text style={styles.quickBtnText}>+¥{(quickVal / 1000)}k</Text>
+                  <Text style={styles.quickBtnText}>+{formatCurrency(quickVal)}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* Payment Method */}
+            {/* Auto-Attributed Social Post (Figma Card) */}
+            <Text style={styles.label}>{t.modals.socialAttributedPost}</Text>
+            <View style={styles.socialCard}>
+              <View style={styles.socialHeader}>
+                <Text style={styles.socialBadge}>📸 IG (Oct 10)</Text>
+                <Text style={styles.socialLikes}>❤️ 142 likes</Text>
+              </View>
+              <Text style={styles.socialCaption}>"VIP Lounge Autumn Exclusive Reserve Tasting"</Text>
+              <Text style={styles.socialHint}>
+                ⚡ Auto-correlated: Visit occurred within 48h of patron interaction.
+              </Text>
+            </View>
+
+            {/* Payment Method 3-way Segmented Control */}
             <Text style={styles.label}>{t.modals.paymentMethod}</Text>
             <View style={styles.methodRow}>
               {[
-                { key: 'CREDIT_CARD', label: t.modals.card },
                 { key: 'CASH', label: t.modals.cash },
+                { key: 'CREDIT_CARD', label: t.modals.card },
                 { key: 'RECEIVABLE', label: t.modals.receivable },
               ].map((m) => {
                 const isSelected = paymentMethod === m.key;
                 return (
                   <TouchableOpacity
                     key={m.key}
-                    onPress={() => setPaymentMethod(m.key as any)}
-                    style={[
-                      styles.methodBtn,
-                      isSelected && styles.methodBtnSelected,
-                    ]}
+                    onPress={() => handlePaymentMethodChange(m.key as any)}
+                    style={[styles.methodBtn, isSelected && styles.methodBtnSelected]}
                   >
                     <Text style={[styles.methodBtnText, isSelected && styles.methodBtnTextSelected]}>
                       {m.label}
@@ -174,6 +208,32 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
                   </TouchableOpacity>
                 );
               })}
+            </View>
+
+            {/* Accounting Settlement Status Switch */}
+            <View style={styles.switchRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.switchTitle}>{t.modals.accountingSettlementStatus}</Text>
+                <Text style={styles.switchSub}>{t.modals.settledNotice}</Text>
+              </View>
+              <Switch
+                value={isSettled}
+                onValueChange={setIsSettled}
+                trackColor={{ false: THEME.colors.slate[300], true: THEME.colors.emerald[500] }}
+                thumbColor="#ffffff"
+              />
+            </View>
+
+            {/* Status Notice Callout Box */}
+            <View style={styles.noticeBox}>
+              <Text style={styles.noticeTitle}>
+                {isSettled ? '✓ Ready to record a settled sale' : '⚠️ Outstanding Tab (Bon / ツケ) Record'}
+              </Text>
+              <Text style={styles.noticeText}>
+                {isSettled
+                  ? `${paymentMethod} payment received from ${activeContact?.name || 'guest'}. Saving will queue accounting ledger delivery.`
+                  : `A receivable of ${formatCurrency(parseFloat(amount) || 0)} will be added to ${activeContact?.name || 'guest'}'s unpaid tab.`}
+              </Text>
             </View>
 
             {/* Order Note */}
@@ -186,16 +246,7 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
               placeholderTextColor={THEME.colors.slate[400]}
             />
 
-            {/* Engine 1 Notice */}
-            <View style={styles.attributionNotice}>
-              <Text style={styles.attributionTitle}>{t.modals.attributionNoticeTitle}</Text>
-              <Text style={styles.attributionText}>
-                {t.modals.attributionNoticeText}
-              </Text>
-            </View>
-          </ScrollView>
-
-          <View style={styles.footer}>
+            {/* Action Buttons */}
             <TouchableOpacity
               style={[styles.submitBtn, isSubmitting && styles.submitBtnDisabled]}
               onPress={handleSubmit}
@@ -204,10 +255,16 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
               {isSubmitting ? (
                 <ActivityIndicator color={THEME.colors.white} />
               ) : (
-                <Text style={styles.submitBtnText}>{t.modals.confirmTransaction}</Text>
+                <Text style={styles.submitBtnText}>{t.modals.syncWebhookBtn}</Text>
               )}
             </TouchableOpacity>
-          </View>
+
+            <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+              <Text style={styles.cancelBtnText}>{t.common.cancel}</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 30 }} />
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -217,22 +274,31 @@ export const RecordSalesModal: React.FC<RecordSalesModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'flex-end',
   },
-  container: {
-    backgroundColor: THEME.colors.white,
-    borderTopLeftRadius: THEME.radius.xl,
-    borderTopRightRadius: THEME.radius.xl,
-    maxHeight: '85%',
+  sheet: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '92%',
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: THEME.spacing.lg,
+    alignItems: 'flex-start',
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: THEME.colors.slate[200],
+  },
+  eyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: THEME.colors.brand[600],
+    letterSpacing: 0.5,
+    marginBottom: 4,
   },
   title: {
     fontSize: 18,
@@ -240,182 +306,262 @@ const styles = StyleSheet.create({
     color: THEME.colors.slate[900],
   },
   subtitle: {
-    fontSize: 11,
+    fontSize: 12,
     color: THEME.colors.slate[500],
     marginTop: 2,
+    maxWidth: 280,
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: THEME.colors.slate[100],
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
   closeBtnText: {
-    fontSize: 14,
+    fontSize: 16,
     color: THEME.colors.slate[600],
     fontWeight: 'bold',
   },
   body: {
-    padding: THEME.spacing.lg,
+    paddingVertical: 14,
   },
   errorBanner: {
-    backgroundColor: THEME.colors.rose[50],
+    backgroundColor: '#fef2f2',
     borderWidth: 1,
-    borderColor: THEME.colors.rose[200],
-    borderRadius: THEME.radius.md,
+    borderColor: '#fecaca',
+    borderRadius: 10,
     padding: 10,
-    marginBottom: 12,
+    marginBottom: 10,
   },
   errorText: {
-    color: THEME.colors.rose[700],
+    color: '#b91c1c',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   label: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
     color: THEME.colors.slate[700],
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 12,
     marginBottom: 6,
-    marginTop: 10,
   },
   clientScroll: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
   clientChip: {
-    backgroundColor: THEME.colors.slate[100],
+    paddingVertical: 8,
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: THEME.radius.full,
-    marginRight: 6,
+    borderRadius: 12,
+    backgroundColor: THEME.colors.slate[50],
+    borderWidth: 1,
+    borderColor: THEME.colors.slate[200],
+    marginRight: 8,
   },
   clientChipSelected: {
-    backgroundColor: THEME.colors.brand[600],
+    backgroundColor: THEME.colors.brand[50],
+    borderColor: THEME.colors.brand[500],
   },
   clientChipText: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: '700',
     color: THEME.colors.slate[700],
-    fontWeight: '600',
   },
   clientChipTextSelected: {
-    color: THEME.colors.white,
+    color: THEME.colors.brand[700],
+  },
+  clientChipLtv: {
+    fontSize: 10,
+    color: THEME.colors.slate[400],
+    marginTop: 2,
+  },
+  clientChipLtvSelected: {
+    color: THEME.colors.brand[600],
+    fontWeight: '600',
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: THEME.colors.slate[300],
-    borderRadius: THEME.radius.md,
-    paddingHorizontal: 12,
+    borderColor: THEME.colors.slate[200],
+    borderRadius: 12,
     backgroundColor: THEME.colors.slate[50],
+    paddingHorizontal: 12,
   },
   currencyPrefix: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: 'bold',
     color: THEME.colors.slate[500],
     marginRight: 6,
   },
   amountInput: {
     flex: 1,
-    paddingVertical: 10,
-    fontSize: 18,
-    fontWeight: '800',
+    height: 46,
+    fontSize: 16,
+    fontWeight: 'bold',
     color: THEME.colors.slate[900],
   },
   quickAmountRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
     marginTop: 8,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   quickBtn: {
     flex: 1,
-    backgroundColor: THEME.colors.slate[100],
+    backgroundColor: THEME.colors.brand[50],
     paddingVertical: 6,
-    borderRadius: THEME.radius.sm,
+    borderRadius: 8,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: THEME.colors.brand[200],
   },
   quickBtnText: {
     fontSize: 11,
     fontWeight: '700',
-    color: THEME.colors.slate[700],
+    color: THEME.colors.brand[700],
+  },
+  socialCard: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: THEME.colors.slate[200],
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  socialHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  socialBadge: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: THEME.colors.brand[700],
+  },
+  socialLikes: {
+    fontSize: 11,
+    color: THEME.colors.slate[500],
+  },
+  socialCaption: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: THEME.colors.slate[800],
+    marginBottom: 4,
+  },
+  socialHint: {
+    fontSize: 10,
+    color: THEME.colors.slate[400],
   },
   methodRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   methodBtn: {
     flex: 1,
-    backgroundColor: THEME.colors.slate[100],
     paddingVertical: 10,
-    borderRadius: THEME.radius.md,
     alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: THEME.colors.slate[100],
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: THEME.colors.slate[200],
   },
   methodBtnSelected: {
-    backgroundColor: THEME.colors.brand[50],
-    borderColor: THEME.colors.brand[500],
+    backgroundColor: THEME.colors.brand[600],
+    borderColor: THEME.colors.brand[600],
   },
   methodBtnText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: THEME.colors.slate[700],
   },
   methodBtnTextSelected: {
-    color: THEME.colors.brand[700],
+    color: '#ffffff',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: THEME.colors.slate[50],
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: THEME.colors.slate[200],
+    marginBottom: 12,
+  },
+  switchTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: THEME.colors.slate[800],
+  },
+  switchSub: {
+    fontSize: 10,
+    color: THEME.colors.slate[500],
+    marginTop: 2,
+    maxWidth: 240,
+  },
+  noticeBox: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  noticeTitle: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#166534',
+    marginBottom: 4,
+  },
+  noticeText: {
+    fontSize: 11,
+    color: '#15803d',
+    lineHeight: 16,
   },
   textInput: {
     borderWidth: 1,
-    borderColor: THEME.colors.slate[300],
-    borderRadius: THEME.radius.md,
+    borderColor: THEME.colors.slate[200],
+    borderRadius: 12,
+    backgroundColor: THEME.colors.slate[50],
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 13,
     color: THEME.colors.slate[900],
-    backgroundColor: THEME.colors.slate[50],
-    marginBottom: 12,
-  },
-  attributionNotice: {
-    backgroundColor: THEME.colors.brand[50],
-    borderWidth: 1,
-    borderColor: THEME.colors.brand[200],
-    borderRadius: THEME.radius.md,
-    padding: 10,
-    marginTop: 6,
-    marginBottom: 10,
-  },
-  attributionTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: THEME.colors.brand[800],
-  },
-  attributionText: {
-    fontSize: 10,
-    color: THEME.colors.brand[700],
-    marginTop: 2,
-    lineHeight: 14,
-  },
-  footer: {
-    padding: THEME.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: THEME.colors.slate[200],
+    marginBottom: 16,
   },
   submitBtn: {
     backgroundColor: THEME.colors.brand[600],
+    borderRadius: 14,
     paddingVertical: 14,
-    borderRadius: THEME.radius.lg,
     alignItems: 'center',
+    shadowColor: THEME.colors.brand[600],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
   submitBtnDisabled: {
     opacity: 0.6,
   },
   submitBtnText: {
-    color: THEME.colors.white,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '800',
+    color: '#ffffff',
+  },
+  cancelBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  cancelBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: THEME.colors.slate[500],
   },
 });

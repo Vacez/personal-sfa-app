@@ -11,6 +11,7 @@ import { AlertCard } from '../components/AlertCard';
 import { ContactDetailModal } from '../components/ContactDetailModal';
 import { ForecastCard } from '../components/ForecastCard';
 import { Header } from '../components/Header';
+import { OutreachPitchModal } from '../components/OutreachPitchModal';
 import { RecordSalesModal } from '../components/RecordSalesModal';
 import { THEME } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
@@ -31,6 +32,8 @@ export const HomeScreen: React.FC = () => {
   const [isRecordModalOpen, setIsRecordModalOpen] = useState<boolean>(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
+  const [isPitchModalOpen, setIsPitchModalOpen] = useState<boolean>(false);
+  const [pitchMode, setPitchMode] = useState<'BIRTHDAY' | 'INACTIVE' | 'QUICK_CATCHUP'>('QUICK_CATCHUP');
 
   const loadDashboardData = async () => {
     try {
@@ -61,7 +64,15 @@ export const HomeScreen: React.FC = () => {
 
   const handleAlertAction = (contact: Contact, actionType: string) => {
     setSelectedContact(contact);
-    setIsDetailModalOpen(true);
+    if (actionType === 'birthday_wish') {
+      setPitchMode('BIRTHDAY');
+      setIsPitchModalOpen(true);
+    } else if (actionType === 'outreach') {
+      setPitchMode('INACTIVE');
+      setIsPitchModalOpen(true);
+    } else {
+      setIsDetailModalOpen(true);
+    }
   };
 
   return (
@@ -132,29 +143,26 @@ export const HomeScreen: React.FC = () => {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Floating Action: Record Sales / Bill */}
+      {/* Floating Action: Record Sales / Bill (Capsule) */}
       <View style={styles.floatingActionContainer}>
         <TouchableOpacity
           style={styles.floatingRecordBtn}
           activeOpacity={0.85}
           onPress={() => {
-            setSelectedContact(null);
+            setSelectedContact(contacts[0] || null);
             setIsRecordModalOpen(true);
           }}
         >
-          <Text style={styles.floatingBtnText}>{t.home.recordBill}</Text>
+          <Text style={styles.floatingRecordBtnText}>{t.home.recordBill}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Record Sales Modal */}
-      <RecordSalesModal
-        visible={isRecordModalOpen}
-        contacts={contacts}
-        selectedContact={selectedContact}
-        onClose={() => setIsRecordModalOpen(false)}
-        onSuccess={() => {
-          loadDashboardData();
-        }}
+      {/* Outreach Pitch Modal (Birthday Wish / Quick Catchup / LINE) */}
+      <OutreachPitchModal
+        visible={isPitchModalOpen}
+        contact={selectedContact}
+        modeType={pitchMode}
+        onClose={() => setIsPitchModalOpen(false)}
       />
 
       {/* Contact Detail Modal */}
@@ -162,13 +170,20 @@ export const HomeScreen: React.FC = () => {
         visible={isDetailModalOpen}
         contact={selectedContact}
         onClose={() => setIsDetailModalOpen(false)}
-        onInteractionLogged={() => {
-          loadDashboardData();
-        }}
+        onInteractionLogged={() => loadDashboardData()}
         onOpenRecordSales={(c) => {
           setSelectedContact(c);
           setIsRecordModalOpen(true);
         }}
+      />
+
+      {/* Record Sales Modal */}
+      <RecordSalesModal
+        visible={isRecordModalOpen}
+        contacts={contacts}
+        selectedContact={selectedContact}
+        onClose={() => setIsRecordModalOpen(false)}
+        onSuccess={() => loadDashboardData()}
       />
     </View>
   );
@@ -177,7 +192,7 @@ export const HomeScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.slate[50],
+    backgroundColor: THEME.colors.slate[100],
   },
   content: {
     flex: 1,
@@ -187,26 +202,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: THEME.spacing.lg,
-    marginTop: THEME.spacing.sm,
+    marginTop: THEME.spacing.lg,
     marginBottom: THEME.spacing.sm,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: THEME.colors.slate[700],
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   refreshLink: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     color: THEME.colors.brand[600],
   },
   emptyCard: {
     backgroundColor: THEME.colors.white,
-    marginHorizontal: THEME.spacing.lg,
-    padding: THEME.spacing.xl,
     borderRadius: THEME.radius.lg,
+    padding: THEME.spacing.xl,
+    marginHorizontal: THEME.spacing.lg,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: THEME.colors.slate[200],
@@ -215,34 +230,37 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: THEME.colors.slate[800],
+    marginBottom: 4,
   },
   emptyText: {
-    fontSize: 12,
+    fontSize: 13,
     color: THEME.colors.slate[500],
     textAlign: 'center',
-    marginTop: 4,
   },
   floatingActionContainer: {
     position: 'absolute',
-    bottom: 16,
-    left: THEME.spacing.lg,
-    right: THEME.spacing.lg,
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
   },
   floatingRecordBtn: {
-    backgroundColor: THEME.colors.slate[900],
+    backgroundColor: THEME.colors.slate[950],
     paddingVertical: 14,
+    paddingHorizontal: 28,
     borderRadius: THEME.radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
     shadowColor: THEME.colors.black,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
-  floatingBtnText: {
+  floatingRecordBtnText: {
     color: THEME.colors.white,
     fontSize: 14,
     fontWeight: '800',
+    letterSpacing: 0.3,
   },
 });

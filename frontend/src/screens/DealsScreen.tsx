@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AdvanceStageModal } from '../components/AdvanceStageModal';
 import { ContactDetailModal } from '../components/ContactDetailModal';
 import { Header } from '../components/Header';
+import { NewDealModal } from '../components/NewDealModal';
 import { RecordSalesModal } from '../components/RecordSalesModal';
 import { THEME } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
@@ -31,6 +33,11 @@ export const DealsScreen: React.FC = () => {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [isRecordModalOpen, setIsRecordModalOpen] = useState<boolean>(false);
+  const [isNewDealModalOpen, setIsNewDealModalOpen] = useState<boolean>(false);
+  const [isAdvanceModalOpen, setIsAdvanceModalOpen] = useState<boolean>(false);
+  const [advanceTargetContact, setAdvanceTargetContact] = useState<Contact | null>(null);
+  const [advanceCurrentStage, setAdvanceCurrentStage] = useState<PipelineStage | null>(null);
+  const [advanceNextStage, setAdvanceNextStage] = useState<PipelineStage | null>(null);
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
 
   const loadPipeline = async () => {
@@ -67,16 +74,40 @@ export const DealsScreen: React.FC = () => {
     loadPipeline();
   };
 
-  const handleAdvanceStage = async (contact: Contact, currentStage: PipelineStage) => {
+  const handleOpenAdvance = (contact: Contact, currentStage: PipelineStage) => {
     const currentIndex = stages.findIndex((s) => s.id === currentStage.id);
     if (currentIndex < stages.length - 1) {
-      const nextStage = stages[currentIndex + 1];
+      setAdvanceTargetContact(contact);
+      setAdvanceCurrentStage(currentStage);
+      setAdvanceNextStage(stages[currentIndex + 1]);
+      setIsAdvanceModalOpen(true);
+    }
+  };
+
+  const handleConfirmAdvance = async () => {
+    if (advanceTargetContact && advanceNextStage) {
       try {
-        await sfaService.updateContactStage(contact.id, nextStage.id);
+        await sfaService.updateContactStage(advanceTargetContact.id, advanceNextStage.id);
+        setIsAdvanceModalOpen(false);
         loadPipeline();
       } catch (err) {
         console.warn('Failed to advance stage:', err);
       }
+    }
+  };
+
+  const handleCreateNewDeal = async (data: {
+    contactId: string;
+    expectedAmount: number;
+    stageId: string;
+    intendedDate: string;
+    notes: string;
+  }) => {
+    try {
+      await sfaService.updateContactStage(data.contactId, data.stageId);
+      loadPipeline();
+    } catch (err) {
+      console.warn('Failed to create/assign deal:', err);
     }
   };
 
@@ -85,6 +116,9 @@ export const DealsScreen: React.FC = () => {
   const getTranslatedStageName = (name: string) => {
     return t.deals.stages[name] || name;
   };
+
+  const activeStageDealsCount = activeStage?.contacts?.length || 0;
+  const activeStageExpectedBills = activeStage?.total_expected || 0;
 
   return (
     <View style={styles.container}>
@@ -97,20 +131,34 @@ export const DealsScreen: React.FC = () => {
         }
       />
 
-      {/* Pipeline Summary Bar */}
-      <View style={styles.summaryBar}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>{t.deals.totalPipeline}</Text>
-          <Text style={styles.summaryValue}>{formatCurrency(totalPipeline)}</Text>
+      {/* Action Bar with New Deal CTA */}
+      <View style={styles.topActionBar}>
+        <View style={styles.eyebrowContainer}>
+          <Text style={styles.eyebrowText}>PIPELINE / STAGE PILLS</Text>
         </View>
-        <View style={styles.summaryDivider} />
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>{t.deals.weightedForecast}</Text>
-          <Text style={styles.summaryValueWeighted}>{formatCurrency(totalWeighted)}</Text>
+        <TouchableOpacity
+          style={styles.newDealBtn}
+          onPress={() => setIsNewDealModalOpen(true)}
+        >
+          <Text style={styles.newDealBtnText}>{t.deals.newDeal}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Two Mini Summary Cards (Figma Style) */}
+      <View style={styles.summaryBar}>
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>{t.deals.contactedDeals}</Text>
+          <Text style={styles.summaryValue}>{activeStageDealsCount}</Text>
+        </View>
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryLabel}>{t.deals.expectedBills}</Text>
+          <Text style={styles.summaryValueWeighted}>
+            {formatCurrency(activeStageExpectedBills)}
+          </Text>
         </View>
       </View>
 
-      {/* Stage Selector Tabs */}
+      {/* Horizontal Stage Selector Pills (Figma Style) */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -123,45 +171,11 @@ export const DealsScreen: React.FC = () => {
           return (
             <TouchableOpacity
               key={stage.id}
-              style={[styles.stageTab, isSelected && styles.stageTabActive]}
+              style={[styles.stagePill, isSelected && styles.stagePillActive]}
               onPress={() => setSelectedStageId(stage.id)}
             >
-              <View style={styles.stageTabHeader}>
-                <Text style={[styles.stageName, isSelected && styles.stageNameActive]}>
-                  {stageName}
-                </Text>
-                <View
-                  style={[
-                    styles.probBadge,
-                    {
-                      backgroundColor:
-                        stage.win_probability_rate >= 80
-                          ? THEME.colors.emerald[100]
-                          : stage.win_probability_rate >= 50
-                          ? THEME.colors.brand[100]
-                          : THEME.colors.slate[200],
-                    },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.probBadgeText,
-                      {
-                        color:
-                          stage.win_probability_rate >= 80
-                            ? THEME.colors.emerald[700]
-                            : stage.win_probability_rate >= 50
-                            ? THEME.colors.brand[700]
-                            : THEME.colors.slate[700],
-                      },
-                    ]}
-                  >
-                    {stage.win_probability_rate}%
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.stageTotal}>
-                {stage.contacts?.length || 0} {t.deals.dealsCount} • {formatCurrency(stage.total_expected || 0)}
+              <Text style={[styles.stagePillText, isSelected && styles.stagePillTextActive]}>
+                {stageName} ({stage.win_probability_rate}%)
               </Text>
             </TouchableOpacity>
           );
@@ -187,7 +201,7 @@ export const DealsScreen: React.FC = () => {
               }}
             >
               <View style={styles.dealHeader}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.clientName}>{contact.name}</Text>
                   <Text style={styles.clientSubtitle}>
                     {contact.display_name || contact.phone || t.contacts.defaultPatron}
@@ -207,7 +221,7 @@ export const DealsScreen: React.FC = () => {
                 </Text>
                 <TouchableOpacity
                   style={styles.advanceBtn}
-                  onPress={() => handleAdvanceStage(contact, activeStage)}
+                  onPress={() => handleOpenAdvance(contact, activeStage)}
                 >
                   <Text style={styles.advanceBtnText}>{t.deals.advance} ➔</Text>
                 </TouchableOpacity>
@@ -216,15 +230,47 @@ export const DealsScreen: React.FC = () => {
           ))
         ) : (
           <View style={styles.emptyStage}>
-            <Text style={styles.emptyStageTitle}>{t.deals.emptyStageTitle}</Text>
+            <View style={styles.emptyIconContainer}>
+              <Text style={styles.emptyIcon}>📋</Text>
+            </View>
+            <Text style={styles.emptyStageTitle}>
+              {t.deals.emptyStageTitle} ({getTranslatedStageName(activeStage?.name || '')})
+            </Text>
             <Text style={styles.emptyStageText}>
               {t.deals.emptyStageText}
             </Text>
+            <View style={styles.emptyActionsRow}>
+              <TouchableOpacity
+                style={styles.emptyPrimaryBtn}
+                onPress={() => setIsNewDealModalOpen(true)}
+              >
+                <Text style={styles.emptyPrimaryBtnText}>{t.deals.newDeal}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
         <View style={{ height: 60 }} />
       </ScrollView>
+
+      {/* New Deal Modal */}
+      <NewDealModal
+        visible={isNewDealModalOpen}
+        contacts={allContacts}
+        stages={stages}
+        onClose={() => setIsNewDealModalOpen(false)}
+        onSubmit={handleCreateNewDeal}
+      />
+
+      {/* Advance Stage Confirmation Modal */}
+      <AdvanceStageModal
+        visible={isAdvanceModalOpen}
+        contact={advanceTargetContact}
+        currentStage={advanceCurrentStage}
+        nextStage={advanceNextStage}
+        onClose={() => setIsAdvanceModalOpen(false)}
+        onConfirm={handleConfirmAdvance}
+      />
 
       {/* Contact Detail Modal */}
       <ContactDetailModal
@@ -253,121 +299,137 @@ export const DealsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.colors.slate[50],
-  },
-  summaryBar: {
-    flexDirection: 'row',
-    backgroundColor: THEME.colors.white,
-    paddingVertical: 12,
-    paddingHorizontal: THEME.spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.slate[200],
-  },
-  summaryItem: {
-    flex: 1,
-  },
-  summaryLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: THEME.colors.slate[400],
-    textTransform: 'uppercase',
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: THEME.colors.slate[900],
-    marginTop: 2,
-  },
-  summaryValueWeighted: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: THEME.colors.brand[600],
-    marginTop: 2,
-  },
-  summaryDivider: {
-    width: 1,
-    height: 30,
-    backgroundColor: THEME.colors.slate[200],
-    marginHorizontal: THEME.spacing.md,
-  },
-  stageTabsScroll: {
-    backgroundColor: THEME.colors.white,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.colors.slate[200],
-  },
-  stageTabsContent: {
-    paddingHorizontal: THEME.spacing.lg,
-    paddingVertical: 10,
-    gap: 8,
-  },
-  stageTab: {
     backgroundColor: THEME.colors.slate[100],
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: THEME.radius.md,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    minWidth: 150,
   },
-  stageTabActive: {
-    backgroundColor: THEME.colors.brand[50],
-    borderColor: THEME.colors.brand[400],
-  },
-  stageTabHeader: {
+  topActionBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: THEME.spacing.lg,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  eyebrowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyebrowText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: THEME.colors.brand[600],
+    letterSpacing: 0.5,
+  },
+  newDealBtn: {
+    backgroundColor: THEME.colors.brand[600],
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    shadowColor: THEME.colors.brand[600],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  newDealBtnText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  summaryBar: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: THEME.spacing.lg,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: THEME.colors.white,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: THEME.colors.slate[200],
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+  },
+  summaryLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: THEME.colors.slate[500],
     marginBottom: 4,
   },
-  stageName: {
+  summaryValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: THEME.colors.slate[900],
+  },
+  summaryValueWeighted: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: THEME.colors.brand[600],
+  },
+  stageTabsScroll: {
+    maxHeight: 52,
+    marginVertical: 6,
+  },
+  stageTabsContent: {
+    paddingHorizontal: THEME.spacing.lg,
+    gap: 8,
+    alignItems: 'center',
+  },
+  stagePill: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: THEME.colors.slate[200],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stagePillActive: {
+    backgroundColor: THEME.colors.brand[600],
+    shadowColor: THEME.colors.brand[600],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  stagePillText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '600',
     color: THEME.colors.slate[700],
-    flex: 1,
-    marginRight: 4,
   },
-  stageNameActive: {
-    color: THEME.colors.brand[900],
-  },
-  probBadge: {
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 4,
-  },
-  probBadgeText: {
-    fontSize: 9,
+  stagePillTextActive: {
+    color: '#ffffff',
     fontWeight: '800',
-  },
-  stageTotal: {
-    fontSize: 10,
-    color: THEME.colors.slate[500],
   },
   dealsList: {
     flex: 1,
-    padding: THEME.spacing.lg,
+    paddingHorizontal: THEME.spacing.lg,
+    paddingTop: 6,
   },
   dealCard: {
     backgroundColor: THEME.colors.white,
     borderRadius: THEME.radius.lg,
-    padding: THEME.spacing.lg,
-    marginBottom: THEME.spacing.md,
+    padding: THEME.spacing.md,
+    marginBottom: THEME.spacing.sm,
     borderWidth: 1,
     borderColor: THEME.colors.slate[200],
-    shadowColor: THEME.colors.slate[900],
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
-    shadowRadius: 5,
-    elevation: 2,
+    shadowRadius: 3,
   },
   dealHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: THEME.spacing.md,
+    marginBottom: 10,
   },
   clientName: {
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: 'bold',
     color: THEME.colors.slate[900],
   },
   clientSubtitle: {
@@ -379,23 +441,22 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   dealAmount: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: 'bold',
     color: THEME.colors.slate[900],
   },
   weightedText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 11,
     color: THEME.colors.brand[600],
-    marginTop: 2,
+    fontWeight: '600',
   },
   dealFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: THEME.spacing.sm,
     borderTopWidth: 1,
     borderTopColor: THEME.colors.slate[100],
+    paddingTop: 8,
   },
   lastContactText: {
     fontSize: 11,
@@ -403,33 +464,62 @@ const styles = StyleSheet.create({
   },
   advanceBtn: {
     backgroundColor: THEME.colors.slate[900],
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: THEME.radius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
   },
   advanceBtnText: {
-    color: THEME.colors.white,
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: 'bold',
+    color: THEME.colors.white,
   },
   emptyStage: {
-    padding: 30,
     alignItems: 'center',
     backgroundColor: THEME.colors.white,
-    borderRadius: THEME.radius.lg,
+    borderRadius: 16,
+    padding: 24,
+    marginTop: 12,
     borderWidth: 1,
     borderColor: THEME.colors.slate[200],
-    marginTop: 10,
+  },
+  emptyIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: THEME.colors.brand[50],
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  emptyIcon: {
+    fontSize: 24,
   },
   emptyStageTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: 'bold',
     color: THEME.colors.slate[800],
+    textAlign: 'center',
   },
   emptyStageText: {
-    fontSize: 11,
+    fontSize: 12,
     color: THEME.colors.slate[500],
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: 6,
+    lineHeight: 18,
+    maxWidth: 280,
+  },
+  emptyActionsRow: {
+    marginTop: 16,
+  },
+  emptyPrimaryBtn: {
+    backgroundColor: THEME.colors.brand[600],
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  emptyPrimaryBtnText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
 });
